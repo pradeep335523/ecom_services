@@ -1,0 +1,14 @@
+server:
+  port: 8081
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: "update"
+    properties:
+        hibernate:
+          dialect: "org.hibernate.dialect.MySQLDialect"
+  datasource:
+    url: "jdbc:mysql://${MYSQL_HOST:localhost}:3306/order-service"
+    username: "user"
+    password: "password"
+    driver-class-name: "com.mysql.cj.jdbc.Driver"
