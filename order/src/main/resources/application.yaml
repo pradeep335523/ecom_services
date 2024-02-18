@@ -1,6 +1,8 @@
 server:
   port: 8081
 spring:
+  application:
+    name: order-service
   jpa:
     hibernate:
       ddl-auto: "update"
@@ -12,7 +14,12 @@ spring:
     username: "user"
     password: "password"
     driver-class-name: "com.mysql.cj.jdbc.Driver"
+
+eureka:
+      client:
+        serviceUrl:
+          defaultZone: ${EUREKA_URI:http://localhost:8080/eureka}
 app:
   property:
     inventory:
-      service-url: "http://localhost:8082/api/v1/inventory/list"
+      service-url: "http://inventory-service/api/v1/inventory/list"

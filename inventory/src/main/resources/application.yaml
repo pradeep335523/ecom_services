@@ -1,6 +1,8 @@
 server:
   port: 8082
 spring:
+  application:
+    name: inventory-service
   jpa:
     hibernate:
       ddl-auto: "create"
@@ -12,3 +14,8 @@ spring:
     username: "user"
     password: "password"
     driver-class-name: "com.mysql.cj.jdbc.Driver"
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8080/eureka}

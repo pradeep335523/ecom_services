@@ -2,6 +2,8 @@ package com.example.inventory;
 
 import com.example.inventory.entity.Inventory;
 import com.example.inventory.repository.InventoryRepository;
+import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,6 +11,9 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class InventoryApplication {
+
+    @Autowired
+    EurekaClient eurekaClient;
 
     public static void main(String[] args) {
         SpringApplication.run(InventoryApplication.class, args);

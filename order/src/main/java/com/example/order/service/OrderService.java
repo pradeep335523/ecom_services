@@ -29,7 +29,7 @@ public class OrderService {
     @Value("${app.property.inventory.service-url}")
     private String inventoryServiceUrl;
 
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     public void createOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -40,7 +40,7 @@ public class OrderService {
         List<String> skuCodeList = order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).toList();
         log.info("inventory service URL : {}",inventoryServiceUrl);
         // Before placing order check for stock availability, if all products are in stock then only place the order
-        InventoryStockResponse[] result = webClient.get().uri(inventoryServiceUrl, uriBuilder ->
+        InventoryStockResponse[] result = webClientBuilder.build().get().uri(inventoryServiceUrl, uriBuilder ->
                 uriBuilder.queryParam("skuCode", skuCodeList).build()
         ).retrieve().bodyToMono(InventoryStockResponse[].class).block();
         boolean validToPlace = Arrays.stream(result).allMatch(oneLine -> oneLine.isProductInStock());
