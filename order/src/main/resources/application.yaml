@@ -24,6 +24,13 @@ app:
     inventory:
       service-url: "http://inventory-service/api/v1/inventory/list"
 management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
   endpoint:
     health:
       show-details: ALWAYS
@@ -57,3 +64,4 @@ resilience4j:
         waitDurationInOpenState: 5s
         permittedNumberOfCallsInHalfOpenState: 2
         automaticTransitionFromOpenToHalfOpenEnabled: true
+
