@@ -9,16 +9,22 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("api/v1")
 public class InventoryController {
     @Autowired
     private Inventoryservice inventoryservice;
 
-    @GetMapping("/inventory/{skuCode}")
+
+    @GetMapping("/inventory")
     @ResponseStatus(HttpStatus.OK)
-    public boolean isInventoryAvailable(@PathVariable("skuCode") String skuCode) {
-        return inventoryservice.checkInventoryStock(skuCode);
+    public String hello() {
+        return "Hello!!!!";
     }
+//    @GetMapping("/inventory/{skuCode}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public boolean isInventoryAvailable(@PathVariable("skuCode") String skuCode) {
+//        return inventoryservice.checkInventoryStock(skuCode);
+//    }
 
     @GetMapping("/inventory/list")
     @ResponseStatus(HttpStatus.OK)

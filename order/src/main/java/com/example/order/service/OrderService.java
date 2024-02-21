@@ -4,6 +4,9 @@ import com.example.order.dto.*;
 import com.example.order.entity.Order;
 import com.example.order.entity.OrderLineItems;
 import com.example.order.repository.OrderRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.web.util.UriBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -31,7 +35,10 @@ public class OrderService {
 
     private final WebClient.Builder webClientBuilder;
 
-    public void createOrder(OrderRequest orderRequest) {
+    @CircuitBreaker(name = "inventory",fallbackMethod = "inventoryFallBackMethod")
+    @TimeLimiter(name = "inventory")
+    @Retry(name = "inventory")
+    public CompletableFuture<String> createOrder(OrderRequest orderRequest) {
         Order order = new Order();
         String orderId = UUID.randomUUID().toString();
         order.setOrderId(orderId);
@@ -47,9 +54,14 @@ public class OrderService {
         if (validToPlace) {
             orderRepository.save(order);
             log.info("Order Placed Successfully : {}", order.getOrderId());
-        } else {
-            throw new RuntimeException("Products are out of Stock, Please try later");
+            return CompletableFuture.supplyAsync(() ->  "Order Placed Successfully") ;
         }
+        return CompletableFuture.supplyAsync(() -> "Unable to place Order, Try again Later... !!!");
+    }
+
+    public CompletableFuture<String> inventoryFallBackMethod(OrderRequest orderRequest, RuntimeException runtimeException)
+    {
+        return CompletableFuture.supplyAsync(() -> "Getting fallback response here as Original service is Not Working...!!!");
     }
 
     private OrderLineItems mapToOrderLineItems(OrderLineItemsRequest orderLineItemsRequest) {

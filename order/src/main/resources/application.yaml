@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 8081
 spring:
   application:
     name: order-service
@@ -23,3 +23,37 @@ app:
   property:
     inventory:
       service-url: "http://inventory-service/api/v1/inventory/list"
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+         - "*"
+
+ ## Resilience4j Properties ------
+resilience4j:
+  retry:
+    instances:
+      inventory:
+        maxAttempts: 3
+  timelimiter:
+    instances:
+      inventory:
+        timeoutDuration: 3s
+  circuitbreaker:
+    instances:
+      inventory:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true

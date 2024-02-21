@@ -19,8 +19,8 @@ public class OrderController {
 
     @PostMapping("/order")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createOrder(@RequestBody OrderRequest orderRequest) {
-        orderService.createOrder(orderRequest);
+    public String createOrder(@RequestBody OrderRequest orderRequest) {
+        return orderService.createOrder(orderRequest).getNow("Value not present");
     }
 
     @GetMapping("/order")
