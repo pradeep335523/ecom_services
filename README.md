@@ -4,3 +4,6 @@ docker run -d -p 8087:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=ad
 ------------
 OAuth2 token generation
 ![img.png](img.png)
+
+Zipkin Docker Run :
+docker run -d -p 9411:9411 openzipkin/zipkin
