@@ -21,6 +21,7 @@
         <module>inventory</module>
         <module>eureka</module>
         <module>api-gateway</module>
+        <module>notification</module>
     </modules>
 
     <properties>

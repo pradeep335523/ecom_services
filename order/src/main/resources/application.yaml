@@ -1,6 +1,24 @@
 server:
   port: 8081
 spring:
+  kafka:
+    template:
+      default-topic: "notificationTopic"
+    producer:
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+            type:
+              mapping: "event:com.example.order.event.OrderPlaceEvent"
+
+
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      bootstrap-servers:
+        - http://localhost:9092
   application:
     name: order-service
   jpa:

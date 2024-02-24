@@ -20,7 +20,7 @@ public class OrderController {
     @PostMapping("/order")
     @ResponseStatus(HttpStatus.CREATED)
     public String createOrder(@RequestBody OrderRequest orderRequest) {
-        return orderService.createOrder(orderRequest).getNow("Value not present");
+        return orderService.createOrder(orderRequest);
     }
 
     @GetMapping("/order")

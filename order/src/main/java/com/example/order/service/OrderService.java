@@ -1,21 +1,18 @@
 package com.example.order.service;
 
+import com.example.order.config.KafkaConfig;
 import com.example.order.dto.*;
 import com.example.order.entity.Order;
 import com.example.order.entity.OrderLineItems;
+import com.example.order.event.OrderPlaceEvent;
 import com.example.order.repository.OrderRepository;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,22 +27,25 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private KafkaTemplate<String, OrderPlaceEvent> kafkaTemplate;
+
     @Value("${app.property.inventory.service-url}")
     private String inventoryServiceUrl;
 
     private final WebClient.Builder webClientBuilder;
 
-    @CircuitBreaker(name = "inventory",fallbackMethod = "inventoryFallBackMethod")
-    @TimeLimiter(name = "inventory")
-    @Retry(name = "inventory")
-    public CompletableFuture<String> createOrder(OrderRequest orderRequest) {
+//    @CircuitBreaker(name = "inventory", fallbackMethod = "inventoryFallBackMethod")
+//    @TimeLimiter(name = "inventory")
+//    @Retry(name = "inventory")
+    public String createOrder(OrderRequest orderRequest) {
         Order order = new Order();
         String orderId = UUID.randomUUID().toString();
         order.setOrderId(orderId);
         order.setOrderLineItemsList(orderRequest.getOrderLineItemsRequests().stream().map(this::mapToOrderLineItems).toList());
 
         List<String> skuCodeList = order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).toList();
-        log.info("inventory service URL : {}",inventoryServiceUrl);
+        log.info("inventory service URL : {}", inventoryServiceUrl);
         // Before placing order check for stock availability, if all products are in stock then only place the order
         InventoryStockResponse[] result = webClientBuilder.build().get().uri(inventoryServiceUrl, uriBuilder ->
                 uriBuilder.queryParam("skuCode", skuCodeList).build()
@@ -53,14 +53,15 @@ public class OrderService {
         boolean validToPlace = Arrays.stream(result).allMatch(oneLine -> oneLine.isProductInStock());
         if (validToPlace) {
             orderRepository.save(order);
+            // notify once Order is placed
+            kafkaTemplate.send(KafkaConfig.NOTIFICATION_TOPIC, new OrderPlaceEvent(order.getOrderId()));
             log.info("Order Placed Successfully : {}", order.getOrderId());
-            return CompletableFuture.supplyAsync(() ->  "Order Placed Successfully") ;
+            return  "Order Placed Successfully";
         }
-        return CompletableFuture.supplyAsync(() -> "Unable to place Order, Try again Later... !!!");
+        return  "Unable to place Order, Try again Later... !!!";
     }
 
-    public CompletableFuture<String> inventoryFallBackMethod(OrderRequest orderRequest, RuntimeException runtimeException)
-    {
+    public CompletableFuture<String> inventoryFallBackMethod(OrderRequest orderRequest, RuntimeException runtimeException) {
         return CompletableFuture.supplyAsync(() -> "Getting fallback response here as Original service is Not Working...!!!");
     }
 
